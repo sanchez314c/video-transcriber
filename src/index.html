@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Transcriber</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <script>
+        // Clear any injected content
+        document.body.childNodes.forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent.includes('ffmpeg')) {
+                node.remove();
+            }
+        });
+    </script>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1 class="app-title">Video Transcriber</h1>
+            <div class="header-controls">
+                <button id="theme-toggle" class="icon-button" title="Toggle Dark Mode">
+                    <svg class="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path class="sun-icon" d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
+                        <path class="moon-icon" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Settings Panel -->
+            <section class="settings-panel">
+                <div class="setting-group">
+                    <label for="folder-input" class="setting-label">Select Folder:</label>
+                    <div class="folder-input-group">
+                        <input type="text" id="folder-input" class="folder-input" placeholder="Choose a folder containing video files..." readonly>
+                        <button id="browse-button" class="primary-button">Browse</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label for="model-select" class="setting-label">Whisper Model:</label>
+                    <select id="model-select" class="model-select">
+                        <option value="tiny">Tiny (Fastest)</option>
+                        <option value="base" selected>Base (Balanced)</option>
+                        <option value="small">Small (Good)</option>
+                        <option value="medium">Medium (Better)</option>
+                        <option value="large">Large (Best)</option>
+                    </select>
+                    <small class="setting-hint">Larger models are more accurate but slower</small>
+                </div>
+
+                <div class="setting-group">
+                    <div class="file-count" id="file-count">No folder selected</div>
+                </div>
+            </section>
+
+            <!-- Action Panel -->
+            <section class="action-panel">
+                <button id="start-button" class="start-button" disabled>
+                    <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    Start Transcription
+                </button>
+                <button id="stop-button" class="stop-button" style="display: none;">
+                    <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 6h12v12H6z"/>
+                    </svg>
+                    Stop
+                </button>
+            </section>
+
+            <!-- Progress Panel -->
+            <section class="progress-panel">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <div class="progress-text" id="progress-text">Ready to start</div>
+            </section>
+
+            <!-- Output Panel -->
+            <section class="output-panel">
+                <h3 class="panel-title">Output Log</h3>
+                <div class="output-container">
+                    <div id="output-content" class="output-content"></div>
+                </div>
+                <div class="output-controls">
+                    <button id="clear-output" class="secondary-button">Clear Log</button>
+                    <button id="save-log" class="secondary-button">Save Log</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Status Bar -->
+        <footer class="status-bar">
+            <div class="status-left">
+                <span id="dependency-status">Checking dependencies...</span>
+            </div>
+            <div class="status-right">
+                <span id="app-version">v1.0.0</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="renderer.js"></script>
+    <script>
+        // Final cleanup of any stray text nodes
+        setTimeout(() => {
+            const walker = document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+            const nodesToRemove = [];
+            while(walker.nextNode()) {
+                if (walker.currentNode.textContent.includes('@ffmpeg') || 
+                    walker.currentNode.textContent.includes('fs-extra')) {
+                    nodesToRemove.push(walker.currentNode);
+                }
+            }
+            nodesToRemove.forEach(node => node.remove());
+        }, 0);
+    </script>
+</body>
+</html>
