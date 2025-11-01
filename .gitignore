@@ -208,6 +208,14 @@ Desktop.ini
 
 # Temporary files
 *.tmp
-*.tempvenv/
+*.temp
+
+# Python virtual environments
+venv/
+ENV/
+env/
+__pycache__/
+
+# Archive
 archive/
 dist/
