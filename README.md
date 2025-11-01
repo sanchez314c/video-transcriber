@@ -158,37 +158,65 @@ Video-Transcriber/
 
 ```
 
+## Documentation
+
+For comprehensive documentation, see:
+
+### 📚 User Documentation
+- **[Quick Start Guide](docs/QUICK_START.md)** - Get up and running in minutes
+- **[Installation Guide](docs/INSTALLATION.md)** - Detailed setup instructions
+- **[FAQ](docs/FAQ.md)** - Common questions and answers
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Resolve common issues
+
+### 🔧 Developer Documentation
+- **[API Reference](docs/API.md)** - Technical API documentation
+- **[Architecture](docs/ARCHITECTURE.md)** - System design and components
+- **[Development Guide](docs/DEVELOPMENT.md)** - Setup and development workflow
+- **[Contributing](CONTRIBUTING.md)** - How to contribute
+
+### 📋 Project Information
+- **[Documentation Index](docs/DOCUMENTATION_INDEX.md)** - Complete documentation overview
+- **[TODO List](docs/TODO.md)** - Planned features and improvements
+- **[Product Requirements](docs/PRD.md)** - Product vision and requirements
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Build and release instructions
+
 ## Architecture
 
 The application consists of:
 - **Electron Frontend**: Modern web-based UI with native OS integration
-- **Python Backend**: Handles video processing and Whisper transcription
-- **IPC Communication**: Secure communication between frontend and backend
+- **Self-Contained Transcriber**: Handles video processing and Whisper transcription
+- **IPC Communication**: Secure communication between processes
 - **Cross-platform Build**: Automated packaging for all major platforms
+
+For detailed architecture information, see [Architecture Documentation](docs/ARCHITECTURE.md).
 
 ## Troubleshooting
 
 ### Common Issues
 
 **"Dependencies not found"**
-- Ensure Python, FFmpeg, and Whisper are installed
-- Try running the automated installer: `node install.js`
+- Ensure FFmpeg is installed and in PATH
+- See [Installation Guide](docs/INSTALLATION.md) for detailed setup
+- Check [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for solutions
 
 **"Transcription fails"**
 - Check video file format is supported
 - Ensure sufficient disk space
 - Try a smaller Whisper model
+- See [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for detailed help
 
 **"App won't start"**
 - Verify Node.js 16+ is installed
 - Run `npm install` to ensure dependencies are installed
 - Check console for error messages
+- See [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for more help
 
 ### Getting Help
 
-1. Check the [Issues](https://github.com/your-repo/issues) page
-2. Run `node install.js` to verify setup
-3. Enable development mode: `npm run dev` for detailed logs
+1. Check [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for common solutions
+2. Search [FAQ](docs/FAQ.md) for quick answers
+3. Report issues on [GitHub Issues](https://github.com/your-repo/issues)
+4. Join discussions at [GitHub Discussions](https://github.com/your-repo/discussions)
 
 ## Contributing
 

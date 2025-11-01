@@ -208,6 +208,4 @@ Desktop.ini
 
 # Temporary files
 *.tmp
-*.tempvenv/
-archive/
-dist/
+*.temp
