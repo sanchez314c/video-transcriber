@@ -1,30 +1,53 @@
-# Video Transcriber
+# Video Transcriber 🎥
 
-A modern cross-platform desktop application for batch transcribing video files using OpenAI's Whisper model. Built with Electron for Windows, macOS, and Linux.
+> Batch transcribe video files with AI-powered Whisper accuracy
 
-## Features
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 
-✨ **Modern UI with Dark Mode**: Beautiful, responsive interface with light/dark theme support  
-🎬 **Batch Processing**: Process multiple video files simultaneously  
-📁 **Wide Format Support**: MP4, AVI, MOV, MKV, FLV, WMV, WebM, M4V, MPG, MPEG  
-🤖 **Multiple AI Models**: Choose from Whisper's tiny, base, small, medium, or large models  
-⚡ **Real-time Progress**: Live progress tracking and detailed logging  
-🔧 **Smart Dependencies**: Automatic dependency checking and installation guidance  
-💾 **Cross-platform**: Native applications for Windows, macOS, and Linux  
-📊 **Export Logs**: Save transcription logs for reference  
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Electron](https://img.shields.io/badge/Electron-39.0.0-47848F?logo=electron)](https://www.electronjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-16%2B-339933?logo=node.js)](https://nodejs.org/)
+[![Platform](https://img.shields.io/badge/Platform-macOS%20|%20Windows%20|%20Linux-lightgrey)](https://github.com/sanchez314c/VideoTranscriber/releases)
 
-## Screenshots
+## 📸 Main Interface
 
-*Coming soon - the app features a sleek dark mode interface*
+![Video Transcriber Interface](build_resources/screenshots/VideoTranscriber_Interface.png)
 
-## Quick Start - One-Command Build & Run
+> The Ultimate Video Transcription Tool - Transform Video to Text with AI Precision
+
+Video Transcriber is a powerful desktop application that makes transcribing video files effortless. Built with Electron and OpenAI's Whisper model, it provides a beautiful dark interface for batch processing multiple video files simultaneously with real-time progress tracking and high-accuracy transcription output.
+
+## ✨ Features
+
+- 🎬 **Batch Processing** - Process multiple video files simultaneously
+- 🤖 **Multiple AI Models** - Choose from Whisper's tiny, base, small, medium, or large models
+- 📁 **Wide Format Support** - MP4, AVI, MOV, MKV, FLV, WMV, WebM, M4V, MPG, MPEG, and more
+- ⚡ **Real-time Progress** - Live progress tracking with detailed logging
+- 🎨 **Beautiful Dark UI** - Modern, responsive interface that's easy on the eyes
+- 🌙 **Dark Mode Support** - Eye-friendly dark theme by default
+- 💾 **Export Logs** - Save transcription logs for reference and review
+- 🔧 **Smart Dependencies** - Automatic dependency checking and installation guidance
+- 🖥️ **Cross-Platform** - Works on macOS, Windows, and Linux
+- 🚀 **GPU Acceleration** - Automatic detection and support for GPU acceleration
+
+## 📸 Screenshots
+
+<details>
+<summary>View Screenshots</summary>
+
+![Main Interface](build_resources/screenshots/VideoTranscriber.png)
+*Main interface showing file selection and transcription controls*
+
+</details>
+
+## 🚀 Quick Start - One-Command Build & Run
 
 ### Option 1: One-Command Solution (Recommended)
 
 ```bash
 # Clone and build
-git clone <repository-url>
-cd Video-Transcriber
+git clone https://github.com/sanchez314c/VideoTranscriber.git
+cd VideoTranscriber
 
 # Build and run with a single command!
 ./build-release-run.sh
@@ -55,39 +78,41 @@ cd Video-Transcriber
 ./build-release-run.sh --platform all
 ```
 
-### Manual Setup (if needed)
+## 📋 Prerequisites
 
-1. **Install Node.js** (16+ required)
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-3. **Install Python dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. **Install FFmpeg:**
-   - **macOS**: `brew install ffmpeg`
-   - **Windows**: Download from https://ffmpeg.org/
-   - **Linux**: `sudo apt install ffmpeg`
+For running from source:
+- **Node.js** 16+ and npm
+- **Python** 3.7+ (for Whisper model)
+- **FFmpeg** (for video processing)
+- **Git** (for cloning)
 
-## Usage
+The application will guide you through installing any missing dependencies.
 
-1. **Launch the app**: `npm start`
-2. **Select folder**: Click "Browse" to choose a folder with video files
-3. **Choose model**: Select Whisper model (tiny=fastest, large=most accurate)
-4. **Start transcription**: Click "Start Transcription"
-5. **Monitor progress**: Watch real-time progress and logs
-6. **Access results**: Text files are saved alongside video files
+## 🛠️ Installation
 
-## Development
+### Detailed Installation
 
-### Running in Development Mode
 ```bash
-npm run dev  # Enables hot reload and dev tools
+# Clone the repository
+git clone https://github.com/sanchez314c/VideoTranscriber.git
+cd VideoTranscriber
+
+# Install Node.js dependencies
+npm install
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Install FFmpeg
+# macOS: brew install ffmpeg
+# Windows: Download from https://ffmpeg.org/
+# Linux: sudo apt install ffmpeg
+
+# Start the application
+./build-release-run.sh
 ```
 
-### Building Distributables
+### Building from Source
 
 ```bash
 # One-command build for current platform
@@ -109,128 +134,178 @@ After building, find your executables in:
 - **Windows**: `dist/Video Transcriber Setup *.exe`
 - **Linux**: `dist/Video Transcriber-*.AppImage` and `dist/*.deb`
 
-## System Requirements
+## 📖 Usage
 
-### Minimum Requirements
-- **OS**: Windows 10, macOS 10.14, or Linux (64-bit)
-- **RAM**: 4GB (8GB recommended for large models)
-- **Storage**: 2GB free space (plus space for models)
-- **Dependencies**: Python 3.7+, FFmpeg, Node.js 16+
+### 1. Starting the Application
 
-### Recommended Requirements
-- **RAM**: 8GB+ for optimal performance
-- **CPU**: Multi-core processor for faster transcription
-- **Storage**: SSD for better I/O performance
+- **Pre-built Binary**: Just double-click the application
+- **From Source**: Run `npm start` or `./build-release-run.sh`
 
-## Whisper Models
+### 2. Selecting Video Files
 
-| Model  | Size  | Speed    | Accuracy | Use Case |
-|--------|-------|----------|----------|----------|
-| tiny   | 39MB  | Fastest  | Good     | Quick drafts, testing |
-| base   | 74MB  | Fast     | Better   | General use (default) |
-| small  | 244MB | Medium   | Good     | Balanced performance |
-| medium | 769MB | Slower   | Better   | High accuracy needs |
-| large  | 1550MB| Slowest  | Best     | Professional transcription |
+1. Click "Browse" to choose a folder containing video files
+2. The app will automatically detect supported video formats
+3. Select specific files or process all files in the folder
 
-## Project Structure
+### 3. Choosing Whisper Model
 
-```
-Video-Transcriber/
-├── build-release-run.sh  # One-command build & run script
-├── package.json          # Node.js configuration
-├── src/                  # Application source code
-│   ├── main.js          # Electron main process
-│   ├── preload.js       # Preload script
-│   ├── renderer.js      # Renderer process
-│   ├── index.html       # Application UI
-│   └── styles.css       # Application styles
-├── assets/              # Application assets
-│   ├── icon.png        # Application icon
-│   ├── icon.ico        # Windows icon
-│   └── icon.svg        # SVG icon
-├── dev/                 # Development files
-│   ├── build.js        # Legacy build script
-│   ├── compile.js      # Legacy compile script
-│   ├── install.js      # Setup helper
-│   └── launch.command  # macOS launch script
-├── dist/               # Build outputs (created after build)
-└── requirements.txt    # Python dependencies
+Select the appropriate Whisper model based on your needs:
+- **Tiny** (39MB): Fastest, good for quick drafts
+- **Base** (74MB): Fast, better quality, great for general use
+- **Small** (244MB): Medium speed, good accuracy
+- **Medium** (769MB): Slower, better accuracy
+- **Large** (1550MB): Slowest, best accuracy for professional transcription
+
+### 4. Transcription Process
+
+1. Configure settings (model choice, output format)
+2. Click "Start Transcription" to begin processing
+3. Monitor real-time progress and detailed logs
+4. Access completed transcriptions saved alongside video files
+
+## 🔧 Configuration
+
+### Directory Structure
 
 ```
+Video Transcriber/
+├── src/                  # Source code
+├── build_resources/      # Icons and screenshots
+├── scripts/             # Build and utility scripts
+├── dist/                # Build outputs (generated)
+├── requirements.txt     # Python dependencies
+└── models/             # Whisper models (downloaded automatically)
+```
 
-## Documentation
+### Whisper Models Reference
 
-For comprehensive documentation, see:
+| Model  | Size   | Speed    | Accuracy | VRAM Required | Use Case |
+|--------|--------|----------|----------|---------------|----------|
+| tiny   | 39MB   | Fastest  | Good     | ~1GB          | Quick drafts, testing |
+| base   | 74MB   | Fast     | Better   | ~1GB          | General use (default) |
+| small  | 244MB  | Medium   | Good     | ~2GB          | Balanced performance |
+| medium | 769MB  | Slower   | Better   | ~5GB          | High accuracy needs |
+| large  | 1550MB | Slowest  | Best     | ~10GB         | Professional transcription |
 
-### 📚 User Documentation
-- **[Quick Start Guide](docs/QUICK_START.md)** - Get up and running in minutes
-- **[Installation Guide](docs/INSTALLATION.md)** - Detailed setup instructions
-- **[FAQ](docs/FAQ.md)** - Common questions and answers
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Resolve common issues
-
-### 🔧 Developer Documentation
-- **[API Reference](docs/API.md)** - Technical API documentation
-- **[Architecture](docs/ARCHITECTURE.md)** - System design and components
-- **[Development Guide](docs/DEVELOPMENT.md)** - Setup and development workflow
-- **[Contributing](CONTRIBUTING.md)** - How to contribute
-
-### 📋 Project Information
-- **[Documentation Index](docs/DOCUMENTATION_INDEX.md)** - Complete documentation overview
-- **[TODO List](docs/TODO.md)** - Planned features and improvements
-- **[Product Requirements](docs/PRD.md)** - Product vision and requirements
-- **[Deployment Guide](docs/DEPLOYMENT.md)** - Build and release instructions
-
-## Architecture
-
-The application consists of:
-- **Electron Frontend**: Modern web-based UI with native OS integration
-- **Self-Contained Transcriber**: Handles video processing and Whisper transcription
-- **IPC Communication**: Secure communication between processes
-- **Cross-platform Build**: Automated packaging for all major platforms
-
-For detailed architecture information, see [Architecture Documentation](docs/ARCHITECTURE.md).
-
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-**"Dependencies not found"**
-- Ensure FFmpeg is installed and in PATH
-- See [Installation Guide](docs/INSTALLATION.md) for detailed setup
-- Check [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for solutions
+<details>
+<summary>FFmpeg not found</summary>
 
-**"Transcription fails"**
-- Check video file format is supported
-- Ensure sufficient disk space
-- Try a smaller Whisper model
-- See [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for detailed help
+Install FFmpeg for your platform:
+```bash
+# macOS
+brew install ffmpeg
 
-**"App won't start"**
-- Verify Node.js 16+ is installed
-- Run `npm install` to ensure dependencies are installed
-- Check console for error messages
-- See [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for more help
+# Windows
+# Download from https://ffmpeg.org/download.html
 
-### Getting Help
+# Linux
+sudo apt install ffmpeg  # Ubuntu/Debian
+sudo dnf install ffmpeg  # Fedora
+```
+</details>
 
-1. Check [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for common solutions
-2. Search [FAQ](docs/FAQ.md) for quick answers
-3. Report issues on [GitHub Issues](https://github.com/your-repo/issues)
-4. Join discussions at [GitHub Discussions](https://github.com/your-repo/discussions)
+<details>
+<summary>Python dependencies missing</summary>
 
-## Contributing
+Install required packages:
+```bash
+pip install -r requirements.txt
+```
+</details>
 
-Contributions welcome! Please read our contributing guidelines and submit pull requests.
+<details>
+<summary>Transcription fails or is slow</summary>
 
-## License
+1. Check the video file format is supported
+2. Ensure sufficient disk space and RAM
+3. Try a smaller Whisper model for better performance
+4. Check logs in the application for detailed error messages
+</details>
 
-MIT License - see LICENSE file for details.
+<details>
+<summary>GPU not detected</summary>
 
-## Changelog
+- **macOS**: Metal acceleration should work automatically
+- **Windows/Linux**: Ensure CUDA is installed and PyTorch was built with CUDA support
+- The app will fall back to CPU processing if GPU is unavailable
+</details>
 
-### v1.0.0
-- Initial release with Electron-based UI
-- Dark mode support
-- Cross-platform builds
-- Real-time progress tracking
-- Batch processing capabilities
+## 📁 Project Structure
+
+```
+Video Transcriber/
+├── package.json              # Node.js configuration and dependencies
+├── package-lock.json         # Dependency lock file
+├── tsconfig.json             # TypeScript configuration
+├── .eslintrc.json            # ESLint configuration
+├── src/                      # Source code
+│   ├── main.js              # Electron main process
+│   ├── preload.js           # Preload script
+│   ├── renderer.js          # Renderer process
+│   ├── index.html           # Application UI
+│   ├── styles.css           # Application styles
+│   └── assets/              # Application assets
+│       └── icons/           # Application icons
+├── build_resources/          # Build resources and assets
+│   ├── icons/               # Platform-specific icons
+│   └── screenshots/         # Application screenshots
+├── scripts/                  # Utility scripts
+│   └── build-compile-dist.sh # Universal build script
+├── dev/                      # Development files
+│   ├── install.js           # Setup helper
+│   └── launch.command       # macOS launch script
+├── requirements.txt          # Python dependencies
+├── archive/                  # Archived/backup files
+└── dist/                     # Build outputs (generated)
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit pull requests or create issues for bug reports and feature requests.
+
+### Development Setup
+
+```bash
+# Clone the repo
+git clone https://github.com/sanchez314c/VideoTranscriber.git
+cd VideoTranscriber
+
+# Install dependencies
+npm install
+pip install -r requirements.txt
+
+# Run in development mode
+./build-release-run.sh --dev
+
+# Run tests
+npm test
+
+# Lint code
+npm run lint
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [OpenAI Whisper](https://github.com/openai/whisper) - The amazing speech recognition model that powers transcription
+- [Electron](https://www.electronjs.org/) - For making cross-platform development possible
+- [FFmpeg](https://ffmpeg.org/) - For powerful video and audio processing
+- The open-source AI community for making these incredible tools available
+
+## 🔗 Links
+
+- [Report Issues](https://github.com/sanchez314c/VideoTranscriber/issues)
+- [Request Features](https://github.com/sanchez314c/VideoTranscriber/issues/new?labels=enhancement)
+- [Discussions](https://github.com/sanchez314c/VideoTranscriber/discussions)
+
+---
+
+**Video Transcriber v1.0** - AI-Powered Video Transcription
+Built with AI! 🚀
