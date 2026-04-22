@@ -7,17 +7,14 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none';"
     />
-    <title>Video Transcriber</title>
+    <title>Omni-platform Video Transcription</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <script>
       // Clear any injected stray text nodes (ffmpeg injection guard)
       document.body.childNodes.forEach((node) => {
-        if (
-          node.nodeType === Node.TEXT_NODE &&
-          node.textContent.includes("ffmpeg")
-        ) {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.includes('ffmpeg')) {
           node.remove();
         }
       });
@@ -29,18 +26,28 @@
 
       <!-- ── TITLE BAR ─────────────────────────────────────────── -->
       <div class="title-bar">
-        <img
-          src="icon-titlebar.png"
-          class="app-icon"
-          alt=""
-          draggable="false"
-        />
-        <span class="app-name">Video Transcriber</span>
-        <span class="app-tagline">Cross-platform Whisper transcription</span>
+        <img src="icon-titlebar.png" class="app-icon" alt="" draggable="false" />
+        <span class="app-name">Omni-platform Video Transcription</span>
         <div class="spacer"></div>
         <div class="title-bar-controls">
           <!-- Flat action icons group -->
           <div class="title-bar-actions">
+            <button class="title-bar-action" id="ai-btn" title="AI Providers">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5z" />
+                <path d="M19 14l.75 2.25L22 17l-2.25.75L19 20l-.75-2.25L16 17l2.25-.75z" />
+                <path d="M5 14l.75 2.25L8 17l-2.25.75L5 20l-.75-2.25L2 17l2.25-.75z" />
+              </svg>
+            </button>
             <button class="title-bar-action" id="about-btn" title="About">
               <svg
                 width="16"
@@ -60,17 +67,9 @@
           </div>
           <!-- Circular window controls group -->
           <div class="title-bar-window-controls">
-            <button class="window-ctrl-btn" id="btn-minimize" title="Minimize">
-              &#x2500;
-            </button>
-            <button class="window-ctrl-btn" id="btn-maximize" title="Maximize">
-              &#x25A1;
-            </button>
-            <button
-              class="window-ctrl-btn window-close-btn"
-              id="btn-close"
-              title="Close"
-            >
+            <button class="window-ctrl-btn" id="btn-minimize" title="Minimize">&#x2500;</button>
+            <button class="window-ctrl-btn" id="btn-maximize" title="Maximize">&#x25A1;</button>
+            <button class="window-ctrl-btn window-close-btn" id="btn-close" title="Close">
               &#x2715;
             </button>
           </div>
@@ -79,12 +78,18 @@
 
       <!-- ── MAIN CONTENT ──────────────────────────────────────── -->
       <main class="main-content">
+        <!-- Mode Toggle -->
+        <section class="mode-toggle-wrap">
+          <div class="mode-toggle" role="tablist" aria-label="Input mode">
+            <button class="mode-pill active" data-mode="folder" role="tab" aria-selected="true">Local Folder</button>
+            <button class="mode-pill" data-mode="urls" role="tab" aria-selected="false">URLs</button>
+          </div>
+        </section>
+
         <!-- Settings Panel -->
-        <section class="card settings-panel">
+        <section class="card settings-panel" id="folder-panel">
           <div class="setting-group">
-            <label for="folder-input" class="setting-label"
-              >Select Folder</label
-            >
+            <label for="folder-input" class="setting-label">Select Folder</label>
             <div class="folder-input-group">
               <input
                 type="text"
@@ -98,9 +103,7 @@
           </div>
 
           <div class="setting-group">
-            <label for="model-select" class="setting-label"
-              >Whisper Model</label
-            >
+            <label for="model-select" class="setting-label">Whisper Model</label>
             <select id="model-select" class="model-select">
               <option value="tiny">Tiny (Fastest)</option>
               <option value="base" selected>Base (Balanced)</option>
@@ -108,9 +111,7 @@
               <option value="medium">Medium (Better)</option>
               <option value="large">Large (Best)</option>
             </select>
-            <small class="setting-hint"
-              >Larger models are more accurate but slower</small
-            >
+            <small class="setting-hint">Larger models are more accurate but slower</small>
           </div>
 
           <div class="setting-group">
@@ -118,28 +119,45 @@
           </div>
         </section>
 
+        <!-- URL Panel -->
+        <section class="card url-panel" id="url-panel" hidden>
+          <div class="setting-group">
+            <label for="url-input" class="setting-label">Video URL</label>
+            <input
+              type="text"
+              id="url-input"
+              class="folder-input"
+              placeholder="https://youtube.com/watch?v=...  ·  tiktok  ·  x  ·  instagram  ·  vimeo"
+            />
+          </div>
+          <div class="setting-group">
+            <label for="url-output-dir" class="setting-label">Output Folder</label>
+            <div class="folder-input-group">
+              <input
+                type="text"
+                id="url-output-dir"
+                class="folder-input"
+                placeholder="Where to save transcripts..."
+                readonly
+              />
+              <button id="url-browse-btn" class="btn-primary">Browse</button>
+            </div>
+          </div>
+          <div class="setting-group">
+            <small class="setting-hint">Captions used when available. Whisper fallback only if no captions. AI polish auto-runs if a default provider is set in AI Providers modal.</small>
+          </div>
+        </section>
+
         <!-- Action Panel -->
         <section class="action-panel">
           <button id="start-button" class="btn-start" disabled>
-            <svg
-              class="button-icon"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
+            <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M8 5v14l11-7z" />
             </svg>
             Start Transcription
           </button>
           <button id="stop-button" class="btn-stop" style="display: none">
-            <svg
-              class="button-icon"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
+            <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M6 6h12v12H6z" />
             </svg>
             Stop
@@ -180,20 +198,58 @@
         </div>
       </footer>
 
+      <!-- ── AI PROVIDERS MODAL ────────────────────────────────── -->
+      <div class="ai-overlay" id="aiOverlay">
+        <div class="ai-modal" role="dialog" aria-label="AI Providers">
+          <div class="ai-modal-header">
+            <h2>AI Providers</h2>
+            <button class="ai-close-btn" id="ai-close-btn" aria-label="Close">&#x2715;</button>
+          </div>
+          <div class="ai-tabs">
+            <button class="ai-tab active" data-tab="providers">Providers</button>
+            <button class="ai-tab" data-tab="about">About</button>
+          </div>
+          <div class="ai-tab-panel active" id="ai-panel-providers">
+            <div class="ai-defaults">
+              <label class="ai-field">
+                <span class="ai-label">Default Provider</span>
+                <select id="ai-default-provider" class="ai-select"></select>
+              </label>
+              <label class="ai-field">
+                <span class="ai-label">Default Model</span>
+                <select id="ai-default-model" class="ai-select"></select>
+              </label>
+              <button id="ai-test-all" class="ai-btn ai-btn-ghost">Test All</button>
+            </div>
+            <div id="ai-provider-list" class="ai-provider-list"></div>
+          </div>
+          <div class="ai-tab-panel" id="ai-panel-about">
+            <dl class="ai-about-grid" id="ai-about-info">
+              <dt>Spec Version</dt><dd id="ai-about-spec">—</dd>
+              <dt>Providers Configured</dt><dd id="ai-about-configured">—</dd>
+              <dt>Providers Total</dt><dd id="ai-about-total">—</dd>
+              <dt>Settings Path</dt><dd id="ai-about-settings">—</dd>
+              <dt>OAuth Credentials Path</dt><dd id="ai-about-oauth">—</dd>
+              <dt>Env Var Source</dt><dd id="ai-about-env">—</dd>
+            </dl>
+            <div class="ai-about-actions">
+              <button id="ai-about-refresh-cache" class="ai-btn ai-btn-ghost">Refresh Model Cache</button>
+              <button id="ai-about-rescan-env" class="ai-btn ai-btn-ghost">Re-scan Env Vars</button>
+              <button id="ai-about-export" class="ai-btn ai-btn-ghost">Export Settings</button>
+              <button id="ai-about-import" class="ai-btn ai-btn-ghost">Import Settings</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ── ABOUT MODAL ───────────────────────────────────────── -->
       <div class="about-overlay" id="aboutOverlay">
         <div class="about-modal">
           <button class="about-close-btn" id="about-close-btn">&#x2715;</button>
-          <img
-            src="icon-titlebar.png"
-            class="about-app-icon"
-            alt="Video Transcriber"
-          />
-          <h2 class="about-app-name">Video Transcriber</h2>
+          <img src="icon-titlebar.png" class="about-app-icon" alt="Omni-platform Video Transcription" />
+          <h2 class="about-app-name">Omni-platform Video Transcription</h2>
           <div class="about-version">v1.0.0</div>
-          <div class="about-desc">
-            Cross-platform video transcription tool using OpenAI Whisper
-          </div>
+          <div class="about-desc">Cross-platform video transcription tool using OpenAI Whisper</div>
           <div class="about-license">MIT License | Jason Paul Michaels</div>
           <a class="about-github-badge" id="aboutGithubLink" href="#">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -210,20 +266,16 @@
     <!-- /.app-container -->
 
     <script src="renderer.js"></script>
+    <script src="ai-modal.js"></script>
     <script>
       // Final cleanup of any stray text nodes
       setTimeout(() => {
-        const walker = document.createTreeWalker(
-          document.body,
-          NodeFilter.SHOW_TEXT,
-          null,
-          false,
-        );
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
         const nodesToRemove = [];
         while (walker.nextNode()) {
           if (
-            walker.currentNode.textContent.includes("@ffmpeg") ||
-            walker.currentNode.textContent.includes("fs-extra")
+            walker.currentNode.textContent.includes('@ffmpeg') ||
+            walker.currentNode.textContent.includes('fs-extra')
           ) {
             nodesToRemove.push(walker.currentNode);
           }

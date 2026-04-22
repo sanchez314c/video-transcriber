@@ -1,0 +1,20 @@
+{
+  "repo": "video-transcriber",
+  "target_path": "/media/heathen-admin/RAID/Development/Projects/portfolio/00-QUEUE/video-transcriber",
+  "started_at": "2026-04-17T22:28:00Z",
+  "finished_at": "2026-04-21T23:55:00Z",
+  "steps_completed": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+  "steps_skipped": [],
+  "steps_blocked": [],
+  "git_pushed": false,
+  "secrets_found": false,
+  "post_pipeline_features": [
+    "Real Whisper engine (replaced simulation)",
+    "URL input mode (yt-dlp captions-first, Whisper fallback)",
+    "API Stack LITE v2.0.0 (17 providers, AI Modal, streaming)",
+    "Neo-Noir rounded drop shadow refinement",
+    "Auto LLM polish via AI Stack for URL transcripts"
+  ],
+  "pipeline_log": "PIPELINE_LOG.md",
+  "wire_count_final": 22
+}

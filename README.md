@@ -42,21 +42,25 @@ npm install
 ```
 
 **Linux:**
+
 ```bash
 ./run-source-linux.sh
 ```
 
 **macOS:**
+
 ```bash
 ./run-source-macos.sh
 ```
 
 **Windows:**
+
 ```bat
 run-source-windows.bat
 ```
 
 Or directly:
+
 ```bash
 npm run dev     # development mode with hot reload
 npm start       # production mode
@@ -77,12 +81,12 @@ See [SETUP.md](SETUP.md) for full prerequisites and platform-specific setup inst
 
 ### Whisper Model Reference
 
-| Model  | Size    | Speed   | Best For |
-|--------|---------|---------|----------|
-| tiny   | 39 MB   | Fastest | Quick drafts, testing |
-| base   | 74 MB   | Fast    | General use (default) |
-| small  | 244 MB  | Medium  | Better accuracy |
-| medium | 769 MB  | Slower  | High accuracy |
+| Model  | Size    | Speed   | Best For                   |
+| ------ | ------- | ------- | -------------------------- |
+| tiny   | 39 MB   | Fastest | Quick drafts, testing      |
+| base   | 74 MB   | Fast    | General use (default)      |
+| small  | 244 MB  | Medium  | Better accuracy            |
+| medium | 769 MB  | Slower  | High accuracy              |
 | large  | 1550 MB | Slowest | Professional transcription |
 
 ## Building a Distributable
@@ -101,6 +105,7 @@ npm run dist:all
 ```
 
 Output goes to the `dist/` folder:
+
 - macOS: `.dmg` and `.app`
 - Windows: NSIS installer `.exe` and `.zip`
 - Linux: `.AppImage`, `.deb`, `.snap`, `.zip`
@@ -136,6 +141,7 @@ No config file needed. All settings are made in the UI. The app reads from `pack
 **App won't launch on Linux (sandbox error)**
 
 The run script handles this automatically, but you can also run manually:
+
 ```bash
 sudo sysctl -w kernel.unprivileged_userns_clone=1
 npm start

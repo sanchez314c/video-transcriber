@@ -54,7 +54,8 @@ export ELECTRON_TRASH=gio
 sudo sysctl -w kernel.unprivileged_userns_clone=1 2>/dev/null || true
 
 # Use all CPU cores for builds
-export UV_THREADPOOL_SIZE=$(nproc)
+UV_THREADPOOL_SIZE=$(nproc)
+export UV_THREADPOOL_SIZE
 
 # Run the app from source (dev mode - unpackaged)
 if [ -f "package.json" ] && grep -q "\"dev\"" package.json; then

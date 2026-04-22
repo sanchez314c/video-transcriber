@@ -5,6 +5,7 @@
 The app is fully functional at the UI and workflow layer. The window, folder selection, file scanning, model dropdown, progress reporting, log panel, and batch orchestration all work.
 
 The transcription backend is currently **simulated**:
+
 - `self-contained-transcriber.js` creates a dummy WAV header instead of extracting real audio
 - Transcription returns placeholder text after a timed progress simulation
 - The dependency check always reports all dependencies as available
@@ -50,6 +51,7 @@ Call FFmpeg to extract 16kHz mono WAV, then call Whisper with the model flag and
 `transcription-engine.js` already loads FFmpeg as WASM via `@ffmpeg/ffmpeg`. The transcription stub there could be replaced with a WASM build of Whisper.cpp.
 
 Resources:
+
 - whisper.cpp WASM build: https://github.com/ggerganov/whisper.cpp
 - whisper-node: https://github.com/ariym/whisper-node (wraps whisper.cpp binaries for Node)
 
@@ -58,7 +60,7 @@ Resources:
 Keep the self-contained approach aside and just call the user's system Python:
 
 ```js
-spawn('python3', ['-m', 'whisper', audioPath, '--model', model, '--output_format', 'txt'])
+spawn('python3', ['-m', 'whisper', audioPath, '--model', model, '--output_format', 'txt']);
 ```
 
 Dependency check would then actually verify `python3 -c "import whisper"` and `ffmpeg --version`.

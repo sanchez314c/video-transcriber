@@ -13,9 +13,8 @@ Classic Electron architecture with clear separation of concerns:
 - **Main Process** (`src/main.js`): Application lifecycle, window management, IPC handlers
 - **Renderer Process** (`src/renderer.js`): UI logic and user interactions
 - **Preload Script** (`src/preload.js`): Secure IPC bridge between main and renderer
-- **Transcription Engines**:
-  - `src/self-contained-transcriber.js`: Self-contained transcription workflow
-  - `src/transcription-engine.js`: FFmpeg-based audio processing
+- **Transcription Engine**:
+  - `src/self-contained-transcriber.js`: Self-contained transcription workflow (audio extraction + Whisper simulation)
 
 ## Common Development Commands
 
@@ -56,7 +55,7 @@ src/
 ├── index.html                  # Main application UI
 ├── styles.css                  # Application styling
 ├── self-contained-transcriber.js
-└── transcription-engine.js
+└── constants.js                    # Shared constants (VIDEO_EXTENSIONS)
 resources/
 ├── icons/                      # Platform-specific icons
 └── screenshots/
@@ -71,6 +70,10 @@ tests/                          # Test suite
 - `scan-folder` — Scans for video files in a directory
 - `start-transcription` — Initiates transcription process
 - `stop-transcription` — Stops active transcription
+- `window-minimize` / `window-maximize` / `window-close` — Frameless window controls
+- `open-external` — Opens URL in system browser (protocol-validated)
+- `get-app-version` — Returns app version string
+- `transcription-progress` (main→renderer event) — Progress/log updates from engine
 
 ## Security Configuration
 
@@ -82,6 +85,7 @@ tests/                          # Test suite
 ## Build Configuration
 
 Electron Builder targets:
+
 - **macOS**: DMG, ZIP (x64, arm64)
 - **Windows**: NSIS, ZIP (x64, ia32)
 - **Linux**: AppImage, DEB, SNAP, ZIP (x64)

@@ -32,6 +32,7 @@ This application processes video and audio files. Please be aware:
 ## Responsible Disclosure
 
 We kindly ask that you:
+
 - Give us reasonable time to fix the issue before public disclosure
 - Avoid accessing or modifying user data without permission
 - Do not perform DoS attacks or degrade service availability

@@ -27,6 +27,7 @@ Thank you for your interest in contributing to Video Transcriber! We welcome con
 ## Reporting Issues
 
 When reporting issues, please include:
+
 - Operating system and version
 - Steps to reproduce the issue
 - Expected vs actual behavior

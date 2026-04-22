@@ -35,15 +35,15 @@ run-source-windows.bat     # Windows
 
 ## Architecture Overview
 
-| File | Role |
-|------|------|
-| `src/main.js` | Electron main process, IPC handlers, window lifecycle |
-| `src/renderer.js` | UI controller, event handling, theme management |
-| `src/preload.js` | Secure IPC bridge |
-| `src/index.html` | App UI structure |
-| `src/styles.css` | Styling |
-| `src/self-contained-transcriber.js` | Transcription workflow |
-| `src/transcription-engine.js` | FFmpeg-based audio processing |
+| File                                | Role                                                  |
+| ----------------------------------- | ----------------------------------------------------- |
+| `src/main.js`                       | Electron main process, IPC handlers, window lifecycle |
+| `src/renderer.js`                   | UI controller, event handling, theme management       |
+| `src/preload.js`                    | Secure IPC bridge                                     |
+| `src/index.html`                    | App UI structure                                      |
+| `src/styles.css`                    | Styling                                               |
+| `src/self-contained-transcriber.js` | Transcription workflow                                |
+| `src/transcription-engine.js`       | FFmpeg-based audio processing                         |
 
 ## IPC Channels
 
@@ -57,13 +57,13 @@ run-source-windows.bat     # Windows
 
 ## Whisper Model Options
 
-| Model | Size | Speed |
-|-------|------|-------|
-| tiny | 39MB | Fastest |
-| base | 74MB | Balanced (default) |
-| small | 244MB | Good accuracy |
-| medium | 769MB | High accuracy |
-| large | 1550MB | Best accuracy |
+| Model  | Size   | Speed              |
+| ------ | ------ | ------------------ |
+| tiny   | 39MB   | Fastest            |
+| base   | 74MB   | Balanced (default) |
+| small  | 244MB  | Good accuracy      |
+| medium | 769MB  | High accuracy      |
+| large  | 1550MB | Best accuracy      |
 
 ## Supported Video Formats
 

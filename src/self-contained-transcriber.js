@@ -1,198 +1,269 @@
-const fs = require("fs-extra");
-const path = require("path");
-const os = require("os");
-const crypto = require("crypto");
-const { spawn } = require("child_process");
-const { VIDEO_EXTENSIONS } = require("./constants");
+// Real transcription engine: ffmpeg extracts audio → whisper.cpp transcribes.
+// Replaces the previous simulation that wrote dummy WAV headers and returned placeholder text.
+
+const fs = require('fs-extra');
+const path = require('path');
+const os = require('os');
+const crypto = require('crypto');
+const { spawn } = require('child_process');
+const { VIDEO_EXTENSIONS } = require('./constants');
+const { parseVtt, reflowToParagraphs, formatAsMarkdown } = require('./transcript-formatter');
+
+const WHISPER_MODELS = {
+  tiny: 'ggml-tiny.en.bin',
+  base: 'ggml-base.en.bin',
+  small: 'ggml-small.en.bin',
+  medium: 'ggml-medium.en.bin',
+  large: 'ggml-large-v3.bin',
+};
+
+// Resolve a bundled binary first, then fall back to system PATH.
+// Used by the main process; the paths differ between dev (src tree) and packaged (resources).
+function resolveBinary(name, appRoot) {
+  const platformDir = process.platform === 'darwin' ? 'macos' : process.platform === 'win32' ? 'win' : 'linux';
+  const exe = process.platform === 'win32' ? `${name}.exe` : name;
+
+  const candidates = [
+    path.join(appRoot, 'resources', 'binaries', platformDir, exe),
+    path.join(process.resourcesPath || '', 'binaries', platformDir, exe),
+    path.join(appRoot, 'node_modules', 'nodejs-whisper', 'cpp', 'whisper.cpp', 'build', 'bin', exe),
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(candidate)) return candidate;
+    } catch (_e) {
+      // ignore
+    }
+  }
+
+  return exe;
+}
+
+function resolveFfmpeg(appRoot) {
+  try {
+    const ffmpegStaticPath = require('ffmpeg-static');
+    if (ffmpegStaticPath && fs.existsSync(ffmpegStaticPath)) return ffmpegStaticPath;
+  } catch (_e) {
+    // ffmpeg-static not installed or not resolvable in this context
+  }
+  return resolveBinary('ffmpeg', appRoot);
+}
+
+function resolveWhisperCli(appRoot) {
+  return resolveBinary('whisper-cli', appRoot);
+}
+
+function resolveModelPath(model, appRoot) {
+  const modelFile = WHISPER_MODELS[model] || WHISPER_MODELS.base;
+  const candidates = [
+    path.join(appRoot, 'models', modelFile),
+    path.join(process.resourcesPath || '', 'models', modelFile),
+    path.join(appRoot, 'node_modules', 'nodejs-whisper', 'cpp', 'whisper.cpp', 'models', modelFile),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return null;
+}
 
 class SelfContainedTranscriber {
-  constructor() {
+  constructor(options = {}) {
     this.onProgress = null;
     this.isTranscribing = false;
     this.currentProcess = null;
+    this.appRoot = options.appRoot || process.cwd();
   }
 
   setProgressCallback(callback) {
     this.onProgress = callback;
   }
 
-  log(message, type = "info") {
+  log(message, type = 'info') {
     if (this.onProgress) {
       this.onProgress({ type, message });
     }
   }
 
   async checkDependencies() {
-    // This is a demo/simulation build — real binaries are not bundled.
-    // All dependency checks return true to allow UI to proceed with simulated output.
-    // In a production build, replace these with actual binary checks against bundled paths.
+    const ffmpegPath = resolveFfmpeg(this.appRoot);
+    const whisperPath = resolveWhisperCli(this.appRoot);
+
+    const ffmpegOk = await this._probeBinary(ffmpegPath, ['-version']);
+    const whisperOk = await this._probeBinary(whisperPath, ['--help']);
+
     return {
-      ffmpeg: true, // DEMO: simulated — no real ffmpeg binary bundled
-      whisper: true, // DEMO: simulated — no real whisper binary bundled
-      python: true, // DEMO: simulated — no real python check performed
+      ffmpeg: ffmpegOk,
+      whisper: whisperOk,
+      model: !!resolveModelPath('base', this.appRoot),
+      ffmpegPath,
+      whisperPath,
     };
   }
 
-  async extractAudio(videoPath, audioPath) {
-    return new Promise((resolve, reject) => {
-      // Simulate FFmpeg audio extraction
-      this.log("Extracting audio from video...", "info");
-
-      // In a real implementation, you would use bundled FFmpeg binary:
-      // const ffmpegPath = path.join(__dirname, '..', 'binaries', process.platform, 'ffmpeg');
-      // const process = spawn(ffmpegPath, ['-i', videoPath, '-vn', '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1', audioPath]);
-
-      // For demo purposes, create a dummy audio file
-      setTimeout(async () => {
-        try {
-          // Create a small dummy WAV file (44-byte header)
-          const wavHeader = Buffer.from([
-            0x52,
-            0x49,
-            0x46,
-            0x46, // "RIFF"
-            0x24,
-            0x00,
-            0x00,
-            0x00, // File size (36 bytes)
-            0x57,
-            0x41,
-            0x56,
-            0x45, // "WAVE"
-            0x66,
-            0x6d,
-            0x74,
-            0x20, // "fmt "
-            0x10,
-            0x00,
-            0x00,
-            0x00, // Subchunk1Size (16)
-            0x01,
-            0x00, // AudioFormat (1 = PCM)
-            0x01,
-            0x00, // NumChannels (1)
-            0x40,
-            0x1f,
-            0x00,
-            0x00, // SampleRate (8000)
-            0x80,
-            0x3e,
-            0x00,
-            0x00, // ByteRate
-            0x02,
-            0x00, // BlockAlign
-            0x10,
-            0x00, // BitsPerSample (16)
-            0x64,
-            0x61,
-            0x74,
-            0x61, // "data"
-            0x00,
-            0x00,
-            0x00,
-            0x00, // Subchunk2Size (0)
-          ]);
-
-          await fs.writeFile(audioPath, wavHeader);
-          this.log("Audio extraction completed", "success");
-          resolve(true);
-        } catch (error) {
-          this.log(`Error creating audio file: ${error.message}`, "error");
-          resolve(false);
-        }
-      }, 2000); // Simulate processing time
-    });
-  }
-
-  async transcribeAudio(audioPath, model = "base") {
+  _probeBinary(binary, args) {
     return new Promise((resolve) => {
-      this.log(`Transcribing audio with ${model} model...`, "info");
-
-      // Simulate transcription progress
-      let progress = 0;
-      const progressInterval = setInterval(() => {
-        progress += 20;
-        this.log(`Transcription progress: ${progress}%`, "info");
-
-        if (progress >= 100) {
-          clearInterval(progressInterval);
-
-          // Generate a realistic transcription result
-          const transcript = `[Transcribed from ${path.basename(audioPath)}]
-
-This is a demo transcription. In a complete self-contained implementation, this would contain the actual speech-to-text results from your video.
-
-Technical Implementation Options:
-1. Bundle Whisper.cpp WebAssembly build for browser-based transcription
-2. Include pre-compiled Whisper binaries for each platform (Mac/Windows/Linux)
-3. Integrate with local ML frameworks like ONNX Runtime
-4. Use system speech recognition APIs (Web Speech API, macOS Speech Framework, Windows SAPI)
-
-Model: ${model}
-Timestamp: ${new Date().toISOString()}
-Audio File: ${path.basename(audioPath)}
-Duration: Simulated processing complete
-
-This demonstrates the UI and workflow. The actual transcription engine would process the audio file and return the spoken text content.`;
-
-          resolve(transcript);
-        }
-      }, 1000);
+      const proc = spawn(binary, args, { stdio: 'ignore' });
+      proc.on('error', () => resolve(false));
+      proc.on('exit', (code) => resolve(code === 0 || code === 1));
     });
   }
 
-  async processVideo(videoPath, outputDir, model = "base") {
+  async extractAudio(videoPath, audioPath) {
+    const ffmpegPath = resolveFfmpeg(this.appRoot);
+    this.log(`Extracting audio from ${path.basename(videoPath)}...`, 'info');
+
+    await new Promise((resolve, reject) => {
+      const args = [
+        '-y',
+        '-i', videoPath,
+        '-vn',
+        '-acodec', 'pcm_s16le',
+        '-ar', '16000',
+        '-ac', '1',
+        audioPath,
+      ];
+      const proc = spawn(ffmpegPath, args);
+      let stderr = '';
+      proc.stderr.on('data', (chunk) => {
+        stderr += chunk.toString();
+      });
+      proc.on('error', (err) => reject(new Error(`ffmpeg spawn failed: ${err.message}`)));
+      proc.on('exit', (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`ffmpeg exited ${code}: ${stderr.split('\n').slice(-5).join(' ')}`));
+        }
+      });
+      this.currentProcess = proc;
+    });
+    this.currentProcess = null;
+
+    this.log('Audio extraction complete', 'success');
+    return true;
+  }
+
+  async transcribeAudio(audioPath, model = 'base') {
+    const whisperPath = resolveWhisperCli(this.appRoot);
+    const modelPath = resolveModelPath(model, this.appRoot);
+
+    if (!modelPath) {
+      throw new Error(
+        `Whisper model '${model}' not found. Download via: cd models && curl -LO https://huggingface.co/ggerganov/whisper.cpp/resolve/main/${WHISPER_MODELS[model] || WHISPER_MODELS.base}`,
+      );
+    }
+
+    this.log(`Transcribing with ${model} model...`, 'info');
+
+    const outputBase = path.join(
+      path.dirname(audioPath),
+      path.basename(audioPath, path.extname(audioPath)),
+    );
+
+    return new Promise((resolve, reject) => {
+      const args = [
+        '-m', modelPath,
+        '-f', audioPath,
+        '-ovtt',
+        '-of', outputBase,
+        '-l', 'auto',
+        '-t', String(Math.max(1, Math.floor(os.cpus().length / 2))),
+        '-pp',
+      ];
+
+      const proc = spawn(whisperPath, args);
+      let stderr = '';
+
+      proc.stdout.on('data', (chunk) => {
+        const text = chunk.toString();
+        const progressMatch = text.match(/progress\s*=\s*(\d+)%/);
+        if (progressMatch) {
+          this.log(`Transcription progress: ${progressMatch[1]}%`, 'info');
+        }
+      });
+
+      proc.stderr.on('data', (chunk) => {
+        const text = chunk.toString();
+        stderr += text;
+        const progressMatch = text.match(/progress\s*=\s*(\d+)%/);
+        if (progressMatch) {
+          this.log(`Transcription progress: ${progressMatch[1]}%`, 'info');
+        }
+      });
+
+      proc.on('error', (err) => reject(new Error(`whisper-cli spawn failed: ${err.message}`)));
+      proc.on('exit', async (code) => {
+        this.currentProcess = null;
+        if (code !== 0) {
+          return reject(new Error(`whisper-cli exited ${code}: ${stderr.split('\n').slice(-5).join(' ')}`));
+        }
+        const vttPath = `${outputBase}.vtt`;
+        try {
+          const vttText = await fs.readFile(vttPath, 'utf8');
+          await fs.unlink(vttPath).catch(() => {});
+          resolve(vttText);
+        } catch (readErr) {
+          reject(new Error(`Failed to read transcript output: ${readErr.message}`));
+        }
+      });
+
+      this.currentProcess = proc;
+    });
+  }
+
+  async processVideo(videoPath, outputDir, model = 'base') {
     const videoName = path.parse(videoPath).name;
-    // Use a random suffix to prevent temp file collisions when processing
-    // files with identical basenames or special characters in the name
-    const randomSuffix = crypto.randomBytes(6).toString("hex");
+    const randomSuffix = crypto.randomBytes(6).toString('hex');
     const audioPath = path.join(os.tmpdir(), `vt_audio_${randomSuffix}.wav`);
-    const transcriptPath = path.join(outputDir, `${videoName}.txt`);
+    const transcriptPath = path.join(outputDir, `${videoName}.md`);
 
     try {
-      this.log(`Processing: ${path.basename(videoPath)}`, "info");
+      this.log(`Processing: ${path.basename(videoPath)}`, 'info');
 
-      // Extract audio
-      const audioExtracted = await this.extractAudio(videoPath, audioPath);
-      if (!audioExtracted) {
-        throw new Error("Failed to extract audio");
+      await this.extractAudio(videoPath, audioPath);
+
+      const vttText = await this.transcribeAudio(audioPath, model);
+      if (!vttText) {
+        throw new Error('Transcription returned empty result');
       }
 
-      // Transcribe audio
-      const transcript = await this.transcribeAudio(audioPath, model);
-      if (!transcript) {
-        throw new Error("Failed to transcribe audio");
+      const cues = parseVtt(vttText);
+      if (cues.length === 0) {
+        throw new Error('Whisper produced empty VTT — audio may be silent or corrupted');
       }
+      const body = reflowToParagraphs(cues);
+      const duration = cues[cues.length - 1].end;
+      const markdown = formatAsMarkdown(body, {
+        title: videoName,
+        sourceUrl: videoPath,
+        platform: 'local-file',
+        author: '',
+        durationSeconds: Math.round(duration),
+        language: 'en',
+        captionType: `whisper-${model}`,
+      });
+      await fs.writeFile(transcriptPath, markdown, 'utf8');
+      this.log(`Transcript saved: ${path.basename(transcriptPath)}`, 'success');
 
-      // Save transcript
-      await fs.writeFile(transcriptPath, transcript, "utf8");
-      this.log(`Transcript saved: ${path.basename(transcriptPath)}`, "success");
-
-      // Clean up temporary audio file
       try {
         await fs.unlink(audioPath);
-        this.log("Temporary files cleaned up", "info");
       } catch (cleanupError) {
-        this.log(
-          `Warning: Could not clean up temporary file: ${cleanupError.message}`,
-          "warning",
-        );
+        this.log(`Warning: Could not clean up temp audio: ${cleanupError.message}`, 'warning');
       }
 
       return transcriptPath;
     } catch (error) {
-      // Clean up on error
       try {
         await fs.unlink(audioPath);
-      } catch (cleanupError) {
-        // File might not exist — ignore cleanup errors
+      } catch (_cleanupError) {
+        // ignore
       }
-
       throw error;
     }
   }
 
-  async processFolder(folderPath, model = "base") {
+  async processFolder(folderPath, model = 'base') {
     try {
       const files = await fs.readdir(folderPath);
       const videoFiles = files.filter((file) => {
@@ -201,12 +272,12 @@ This demonstrates the UI and workflow. The actual transcription engine would pro
       });
 
       if (videoFiles.length === 0) {
-        this.log("No video files found in folder", "warning");
+        this.log('No video files found in folder', 'warning');
         return { processed: 0, failed: 0, results: [] };
       }
 
-      this.log(`Found ${videoFiles.length} video files to process`, "info");
-      this.log(`Using ${model} model for transcription`, "info");
+      this.log(`Found ${videoFiles.length} video files to process`, 'info');
+      this.log(`Using ${model} model for transcription`, 'info');
 
       const results = [];
       let processed = 0;
@@ -214,7 +285,7 @@ This demonstrates the UI and workflow. The actual transcription engine would pro
 
       for (let i = 0; i < videoFiles.length; i++) {
         if (!this.isTranscribing) {
-          this.log("Processing stopped by user", "warning");
+          this.log('Processing stopped by user', 'warning');
           break;
         }
 
@@ -222,46 +293,22 @@ This demonstrates the UI and workflow. The actual transcription engine would pro
         const videoPath = path.join(folderPath, videoFile);
 
         try {
-          this.log(
-            `[${i + 1}/${videoFiles.length}] Processing: ${videoFile}`,
-            "info",
-          );
+          this.log(`[${i + 1}/${videoFiles.length}] Processing: ${videoFile}`, 'info');
 
-          const transcriptPath = await this.processVideo(
-            videoPath,
-            folderPath,
-            model,
-          );
+          const transcriptPath = await this.processVideo(videoPath, folderPath, model);
           results.push({ file: videoFile, transcriptPath, success: true });
           processed++;
-
-          this.log(`✓ Completed: ${videoFile}`, "success");
         } catch (error) {
-          this.log(
-            `✗ Failed to process ${videoFile}: ${error.message}`,
-            "error",
-          );
-          results.push({
-            file: videoFile,
-            error: error.message,
-            success: false,
-          });
+          this.log(`Failed to process ${videoFile}: ${error.message}`, 'error');
+          results.push({ file: videoFile, error: error.message, success: false });
           failed++;
         }
       }
 
-      this.log(
-        `Processing complete! Processed: ${processed}, Failed: ${failed}`,
-        "info",
-      );
-
-      if (processed > 0) {
-        this.log("✓ Transcription batch completed successfully!", "success");
-      }
-
+      this.log(`Batch complete: ${processed} processed, ${failed} failed`, 'success');
       return { processed, failed, results };
     } catch (error) {
-      this.log(`Error processing folder: ${error.message}`, "error");
+      this.log(`Folder processing error: ${error.message}`, 'error');
       throw error;
     }
   }
@@ -269,10 +316,20 @@ This demonstrates the UI and workflow. The actual transcription engine would pro
   stop() {
     this.isTranscribing = false;
     if (this.currentProcess) {
-      this.currentProcess.kill();
+      try {
+        this.currentProcess.kill('SIGTERM');
+      } catch (_e) {
+        // ignore
+      }
       this.currentProcess = null;
     }
   }
 }
 
-module.exports = { SelfContainedTranscriber };
+module.exports = SelfContainedTranscriber;
+module.exports.SelfContainedTranscriber = SelfContainedTranscriber;
+module.exports.resolveBinary = resolveBinary;
+module.exports.resolveFfmpeg = resolveFfmpeg;
+module.exports.resolveWhisperCli = resolveWhisperCli;
+module.exports.resolveModelPath = resolveModelPath;
+module.exports.WHISPER_MODELS = WHISPER_MODELS;

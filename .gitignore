@@ -191,6 +191,14 @@ release/
 *.xml
 *.csv
 
+# Unblock project config files caught by the blanket *.json rule above
+!package.json
+!package-lock.json
+!.eslintrc.json
+!.prettierrc
+!PIPELINE_COMPLETION.json
+!/.github/ISSUE_TEMPLATE/*.md
+
 # FFmpeg binaries
 binaries/
 ffmpeg/
